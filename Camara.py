@@ -1,7 +1,8 @@
 from math import sin, cos, radians
-from pygame         import init
+from pygame         import init, Color
 from pygame.display import set_mode, update
-from pygame.event import get
+from pygame.event   import get
+from pygame.gfxdraw import pixel
 
 def posPlano(PTO_CAM):
     '''OBJ: Calcula la pos del plano a partir del pto de la camara
@@ -12,8 +13,9 @@ def posPlano(PTO_CAM):
     POS_CAM_X, POS_CAM_Y, POS_CAM_Z = POS_CAM
 
     ALFA, BETA, GAMMA = ROT_CAM    
-    ALFA, BETA, GAMMA = radians(ALFA), radians(BETA),\
-                            radians(GAMMA)
+    ALFA, BETA, GAMMA = radians(ALFA),\
+                        radians(BETA),\
+                        radians(GAMMA)
        
     if 0 <= ALFA <= 90: # ++ 1er cuad [0, 90]
         res = [cos(ALFA), sin(ALFA), POS_CAM_Z]
@@ -28,14 +30,54 @@ def posPlano(PTO_CAM):
         res = [cos(ALFA), -sin(ALFA), POS_CAM_Z]
  
     return res
-        
-#PROBADOR
+
+ESCALA = 150
+def getPixel():
+    SEPARACION_LATERAL = ESCALA # 30 # ESCALA // 10
+    SEPARACION_ALTURA = 0
+
+    return (int(ESCALA * POS_PLANO_X) +\
+            SEPARACION_LATERAL,\
+            int(ESCALA * (1 - POS_PLANO_Y)) +\
+            SEPARACION_ALTURA)
+
+def pintaTabla(POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z):
+    POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z = round(POS_PLANO_X, 2),\
+                        round(POS_PLANO_Y, 2),\
+                        round(POS_PLANO_Z, 2)
+    POS_PLANO = [POS_PLANO_X, POS_PLANO_Y,\
+                 POS_PLANO_Z]
+
+    ANCHURA_PIXEL, ALTURA_PIXEL = getPixel()
+    print("\npinto pixel en (",\
+          ANCHURA_PIXEL, ",", ALTURA_PIXEL,\
+          ")\n\nrotCam =", rotCam,\
+          "\nposPlano =", POS_PLANO)
+
+def pintaPixel():
+    ANCHURA_PIXEL, ALTURA_PIXEL = getPixel()
+    
+    pixel(PANTALLA, ANCHURA_PIXEL, ALTURA_PIXEL,\
+          BLANCO)
+
+ANCHURA, ALTURA, NEGRO, BLANCO = 400, 400,\
+                                Color(0, 0, 0),\
+                                Color(255, 255, 255)
+
+rotCam, v = [0, 0, 0], 5 # º
+
+POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z = posPlano([[0,0,0],\
+                                          rotCam])
+
+PANTALLA = set_mode((ANCHURA, ALTURA))
+
 init()
-PANTALLA = set_mode((300, 300))
+pintaPixel()
+update()
 
-rotCam, v = [0, 0, 0], 1
+pintaTabla(POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z)
 
-while True:
+while True: 
     ent = input("\n-/+ q/e alfa, a/d beta, z/c gamma:\n").lower()
 
     if ent in ("qeadzc"):
@@ -66,15 +108,19 @@ while True:
         rotCam = [alfa, beta, gamma]
 
         POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z = posPlano([[0,0,0],\
-                                                          rotCam])
-        POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z = round(POS_PLANO_X, 2),\
-                        round(POS_PLANO_Y, 2),\
-                        round(POS_PLANO_Z, 2)
-        POS_PLANO = [POS_PLANO_X, POS_PLANO_Y, POS_PLANO_Z]
+                                        rotCam])
 
-        print("\nrotCam =", rotCam, "\nposPlano =", POS_PLANO)
-        
+        PANTALLA.fill(NEGRO)
+        pintaPixel()
+        update()
+
+        pintaTabla(POS_PLANO_X, POS_PLANO_Y,\
+                   POS_PLANO_Z)
+
     for evento in get():
         pass
+        
+   
+    
       
 
